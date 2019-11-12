@@ -1,0 +1,27 @@
+{
+  "name": "energy-system",
+  "version": "1.0.0",
+  "description": "A simulation of complex systems to determine the energy-complexity relationship",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "babel src -d dist",
+    "start": "npm run build && babel-watch --watch src src/main.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rvailleux/energy-system.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rvailleux/energy-system/issues"
+  },
+  "homepage": "https://github.com/rvailleux/energy-system#readme",
+  "devDependencies": {
+    "@babel/cli": "^7.7.0",
+    "@babel/core": "^7.7.2",
+    "@babel/preset-env": "^7.7.1",
+    "babel-watch": "^7.0.0"
+  }
+}
