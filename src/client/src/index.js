@@ -1,12 +1,30 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
-import * as serviceWorker from './serviceWorker';
+import { Graph } from 'react-d3-graph';
+import System from './model/systemClass';
 
-ReactDOM.render(<App />, document.getElementById('root'));
+const system = new System(10,2);
 
-// If you want your app to work offline and load faster, you can change
-// unregister() to register() below. Note this comes with some pitfalls.
-// Learn more about service workers: https://bit.ly/CRA-PWA
-serviceWorker.unregister();
+const data = system.toGraph();
+
+const myConfig = {
+    nodeHighlightBehavior: true,
+    node: {
+        color: 'lightgreen',
+        size: 120,
+        highlightStrokeColor: 'blue'
+    },
+    link: {
+        highlightColor: 'lightblue'
+    }
+};
+
+
+  // ========================================
+  ReactDOM.render(
+    <Graph
+     id='graph-id' // id is mandatory, if no id is defined rd3g will throw an error
+     data={data}
+     config={myConfig} />,
+    document.getElementById('root')
+  );

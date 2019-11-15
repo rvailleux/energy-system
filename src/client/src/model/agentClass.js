@@ -11,18 +11,18 @@ export default class Agent {
     addConnection(neighbourgAgent) {
         let newConnection = new Connection(this, neighbourgAgent);
         this.connections.push(newConnection);
-        neighbourgAgent.ackConnection(this);
+        neighbourgAgent.ackConnection(newConnection);
 
         return newConnection;
     }
 
-    ackConnection(fromAgent) {
-        this.connections.push(fromAgent);
+    ackConnection(connection) {
+        this.connections.push(connection);
     }
 
     removeConnection(connectionToRemove){
         this.connections = this.connections.filter((connection,index) => {
-            return connection.id != connectionToRemove.id;
+            return connection.id !== connectionToRemove.id;
         });
     }
 
@@ -40,6 +40,10 @@ export default class Agent {
             return null;
 
         return connection.agents[0].id === this.id ? connection.agents[1] : connection.agents[0]}) : null;
+    }
+
+    toGraph(){
+        return {id: this.id};
     }
 
     toString() {
