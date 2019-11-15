@@ -7,6 +7,10 @@ export default class Connection{
         this.id = Connection.getNewConnectionId();
     }
 
+    getPairAgent(differentFromThisAgent){
+        return this.agents[0].id !== differentFromThisAgent ? this.agents[0] : this.agents[1];
+    }
+
     disconnectAllAgents(){
         if(this.agents[0] != null)
             this.agent[0].removeConnection(this) ;
@@ -17,12 +21,16 @@ export default class Connection{
         return
     }
 
+    toGraph(){
+        return { source: this.agents[0].id, target: this.agents[1].id};
+    }
+
     toString(){
         return "";
     }
 
     static getNewConnectionId(){
-        return Connection.connectionIdCount++;
+        return "CONNECTION"+Connection.connectionIdCount++;
     }
 }
 

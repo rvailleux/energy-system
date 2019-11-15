@@ -2,10 +2,9 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import { Graph } from 'react-d3-graph';
 import System from './model/systemClass';
+import SystemPlayer from './SystemPlayer';
 
-const system = new System(10,2);
-
-const data = system.toGraph();
+const system = new System(10,3);
 
 const myConfig = {
     nodeHighlightBehavior: true,
@@ -16,15 +15,21 @@ const myConfig = {
     },
     link: {
         highlightColor: 'lightblue'
-    }
+    },
+    height: 800,
+    width: 1024,
+};
+
+myConfig.d3 = {
+    gravity: -2550
 };
 
 
   // ========================================
   ReactDOM.render(
-    <Graph
+    <SystemPlayer
      id='graph-id' // id is mandatory, if no id is defined rd3g will throw an error
-     data={data}
-     config={myConfig} />,
+     config={myConfig} 
+     systemInstance={system}/>,
     document.getElementById('root')
   );

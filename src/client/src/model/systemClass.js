@@ -19,7 +19,7 @@ export default class System {
                 return;
 
             while (agent.connections.length < avgConnectionsPerAgent) {
-                let eligibleAgentsList = this.agents.filter(randomAgent => { return agent.id !== randomAgent.id && randomAgent.connections.length < avgConnectionsPerAgent });
+                let eligibleAgentsList = this.agents.filter(randomAgent => { return agent.id !== randomAgent.id && !agent.neighbourgs.includes(randomAgent) && randomAgent.connections.length < avgConnectionsPerAgent });
 
 
                 if (eligibleAgentsList.length > 0) {
@@ -91,9 +91,8 @@ export default class System {
     toGraph() {
         let nodes = this.agents.map(agent => { return agent.toGraph() });
         let links = this.getAllConnections().map(connection => {
-            return { source: connection.agents[0].id, target: connection.agents[1].id};
+            return connection.toGraph();
         });
-        console.log(links);
         return { nodes: nodes, links: links };
     }
 
