@@ -6,39 +6,55 @@ export default class MessageManager{
             this.parentAgent = parentAgent;
             this.inbox = [];
             this.sendbox = [];
-            this.sendQueue = [];
-            this.sentBox = []; //["connection+msg hash"...]
+            this.sendqueue = [];
+            this.sentbox = []; //["connection+msg hash"...]
     }
 
     receiveMessage(msgObject){
-        if(this.inbox[msgObject.id] === undefined){
-            this.inbox[msgObject.id] = {message: msgObject, status: 0};
-            this.queueMessage(msgObject);
-        }
 
-        console.log("Agent id:" + this.parentAgent.id + " received message id " + msgObject.id);
+        if(!this.inbox.includes(msgObject)){
+
+            console.log("Agent id:" + this.parentAgent.id + " received message id " + msgObject.id+ "inbox size: " + this.inbox.length);
+            console.log({inbox: this.inbox});
+
+            this.inbox.push(msgObject);
+            this.queueMessage(msgObject);
+
+            return true;
+        }        
+
+        console.log('ALREADY RECEIVED!');
+
+        return false;
     }
 
     queueMessage(msgObject){
-        console.log("Agent id:" + this.parentAgent.id + " queued message id " + msgObject.id);
+        
         this.parentAgent.connections.forEach(connection => {
-            this.sendQueue.push({message:msgObject, connection: connection});
+            console.log("Agent id:" + this.parentAgent.id + " queue message id " + msgObject.id + " for connection " + connection.id);
+            this.sendqueue.push({message:msgObject, connection: connection});
         });
     }
 
     sendMessages(energyAmount){
-        let lastingEnergyAmount = energyAmount;
-        
-        while(lastingEnergyAmount > 0 && this.sendQueue.slice(-1).size <= lastingEnergyAmount){
-            let nextMsg = this.sendQueue.pop();
-            this.sendMessage(nextMsg.message, nextMsg.connection);
-            lastingEnergyAmount += nextMsg.message.size;
+        let lastingEnergyAmount = energyAmount;     
+
+        while(lastingEnergyAmount > 0 && this.sendqueue.length > 0 && this.sendqueue.slice(-1)[0].message.size <= lastingEnergyAmount){
+            let nextMsg = this.sendqueue.pop();
+            console.log("Agent id:" + this.parentAgent.id + " sending message id " + nextMsg.message.id + " to " + nextMsg.connection.getPairAgent(this.parentAgent).id);
+            lastingEnergyAmount -= (this.sendMessage(nextMsg.message, nextMsg.connection) ? nextMsg.message.size : 0);
         }
+
+        return lastingEnergyAmount;
     }
 
     sendMessage(msgObject, toConnectionObject){
         console.log("Agent id:" + this.parentAgent.id + " send message id " + msgObject.id + " to agent id : "+ toConnectionObject.getPairAgent(this.parentAgent).id);
-        return toConnectionObject.getPairAgent(this.parentAgent).ackMessage(msgObject);
         
+        let diffusionDone = toConnectionObject.getPairAgent(this.parentAgent).ackMessage(msgObject)
+        if(diffusionDone)
+            this.sentbox.push(msgObject);
+
+        return diffusionDone;
     }
 }

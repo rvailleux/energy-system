@@ -21,7 +21,7 @@ const myConfig = {
 };
 
 myConfig.d3 = {
-    gravity: -2550
+    gravity: -1550
 };
 
 

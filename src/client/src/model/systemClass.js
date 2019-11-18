@@ -41,7 +41,7 @@ export default class System {
 
     getAllConnections() {
         let map = this.agents.reduce((connectionMap, agent) => {
-            
+
             let map = connectionMap;
             agent.connections.forEach(connection => {
                 connectionMap[connection.id] = connection;
@@ -72,21 +72,59 @@ export default class System {
         return newAgent;
     }
 
-    getRandomiseAgents(agentsArray = this.agents) {
-        /**
-         * Randomize array element order in-place.
-         * Using Durstenfeld shuffle algorithm.
-         */
-        let array = agentsArray;
-        for (var i = array.length - 1; i > 0; i--) {
-            var j = Math.floor(Math.random() * (i + 1));
-            var temp = array[i];
-            array[i] = array[j];
-            array[j] = temp;
-        }
+    getAgentById(agentId) {
+        let result = this.agents.filter(agent => agent.id === agentId);
 
-        return array;
+        if(result.length > 1){
+            throw new Error("Too many agents with the same id " + agentId);
+        }
+        else if(result.length <= 0){
+            return null;
+        } else if(result.length === 1){
+            return result[0];
+        }
+        return null;
     }
+
+    getRandomAgent(agentsArray = this.agents) {
+        return agentsArray === undefined ? null : agentsArray[Math.round(Math.random() * (agentsArray.length - 1))]
+    }
+
+    tickCirculateMessages() {
+        console.log("circulating messages");
+        this.agents.forEach(agent => {
+            agent.diffuseMessagesToNeighbourgs();
+        });
+    }
+
+    tickEnergize(energyPerAgent) {
+        this.agents.forEach(agent => {
+            agent.feedEnergy(energyPerAgent);
+        });
+    }
+
+    loadFromGraphML(graphMLObject) {
+        if (graphMLObject !== undefined) {
+            if (graphMLObject.nodes !== undefined) {
+
+                graphMLObject.nodes.forEach(node => {
+                    let newAgent = this.addAgent();
+                    newAgent.loadFromGraphML(node.id);
+                });
+            }
+
+            if (graphMLObject.links !== undefined) {
+                graphMLObject.links.forEach(link =>{
+                    let source = this.getAgentById(link.source.id) || new Agent(this);
+                    let target = this.getAgentById(link.target.id) || new Agent(this);
+
+                    source.addConnection(target);
+
+                });
+            }
+        }
+    }
+
 
     toGraph() {
         let nodes = this.agents.map(agent => { return agent.toGraph() });

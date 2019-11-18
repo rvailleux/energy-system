@@ -11,6 +11,15 @@ export default class Agent {
         this.energyJauge = 0;
     }
 
+    loadFromGraphML(graphMLNodeObject){
+        if(graphMLNodeObject !== undefined){
+            if(this.parentSystem.getAgentById() != null)
+                throw new Error("Can't load graphML, already existing agent id "+graphMLNodeObject.id);
+            else 
+                this.id = graphMLNodeObject.id;
+        }
+    }
+
     inputEnergy(amount) {
         this.energyJauge += amount;
     }
@@ -56,7 +65,7 @@ export default class Agent {
     }
 
     diffuseMessagesToNeighbourgs() {
-        this.messageManager.sendMessages(this.energyJauge);
+        this.energyJauge = this.messageManager.sendMessages(this.energyJauge);
     }
 
     feedEnergy(energyAmout){

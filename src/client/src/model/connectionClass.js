@@ -8,7 +8,7 @@ export default class Connection{
     }
 
     getPairAgent(differentFromThisAgent){
-        return this.agents[0].id !== differentFromThisAgent ? this.agents[0] : this.agents[1];
+        return this.agents[0].id !== differentFromThisAgent.id ? this.agents[0] : this.agents[1];
     }
 
     disconnectAllAgents(){

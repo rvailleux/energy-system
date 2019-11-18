@@ -1,5 +1,5 @@
 export default class Message{
-    constructor(msgSize){
+    constructor(msgSize = 1){
         this.size = msgSize;
         this.id = Message.getMessageId();
     }
