@@ -1,27 +1,27 @@
 import Connection from './connectionClass'
 import MessageManager from './messageManagerClass';
 
+const MAX_ENERGY_JAUGE = 10;
+
 
 export default class Agent {
-    constructor(parentSystem) {
+    constructor(parentSystem, agentId = null) {
         this.parentSystem = parentSystem;
         this.connections = [];
-        this.id = Agent.getNewAgentId();
+        if(agentId !== null){
+            if(this.parentSystem.getAgentById(agentId) === null){
+                this.id = agentId;
+            } else 
+                throw new Error("Can't instanciate two agents with the same id "+ agentId);
+        } else 
+            this.id = Agent.getNewAgentId();
+
         this.messageManager = new MessageManager(this);
         this.energyJauge = 0;
     }
 
-    loadFromGraphML(graphMLNodeObject){
-        if(graphMLNodeObject !== undefined){
-            if(this.parentSystem.getAgentById() != null)
-                throw new Error("Can't load graphML, already existing agent id "+graphMLNodeObject.id);
-            else 
-                this.id = graphMLNodeObject.id;
-        }
-    }
-
     inputEnergy(amount) {
-        this.energyJauge += amount;
+        this.energyJauge = ((this.energyJauge + amount) > MAX_ENERGY_JAUGE ? MAX_ENERGY_JAUGE : this.energyJauge+amount);
     }
 
     addConnection(neighbourgAgent) {
@@ -84,9 +84,24 @@ export default class Agent {
         return returnString;
     }
 
+    static getAgentFromGraphML(graphMLNodeObject, systemObject){
+            if(graphMLNodeObject !== undefined){
+                if(systemObject.getAgentById(graphMLNodeObject.id) != null){
+                    throw new Error("Can't load graphML, already existing agent id "+graphMLNodeObject.id);
+                }
+                else {
+                    let newAgent = new Agent(systemObject, graphMLNodeObject.id);
+                    return newAgent;
+                }
+            }
+
+            return null;
+    }
+    
     static getNewAgentId() {
         return "AGENT" + Agent.agentIDCount++;
     }
 }
+
 
 Agent.agentIDCount = 0;

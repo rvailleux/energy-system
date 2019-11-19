@@ -41,9 +41,9 @@ export default class System {
 
     getAllConnections() {
         let map = this.agents.reduce((connectionMap, agent) => {
-
             let map = connectionMap;
             agent.connections.forEach(connection => {
+                
                 connectionMap[connection.id] = connection;
             });
 
@@ -64,14 +64,19 @@ export default class System {
         }
     }
 
-    addAgent() {
-        let newAgent = new Agent(this);
-
+    addAgent(agentObject = null) {
+        
+        let newAgent = agentObject === null ? new Agent(this) : agentObject;
         this.agents.push(newAgent);
 
         return newAgent;
     }
 
+    /**
+     * 
+     * @param {*} agentId 
+     * @returns null || Agent Object
+     */
     getAgentById(agentId) {
         let result = this.agents.filter(agent => agent.id === agentId);
 
@@ -91,7 +96,6 @@ export default class System {
     }
 
     tickCirculateMessages() {
-        console.log("circulating messages");
         this.agents.forEach(agent => {
             agent.diffuseMessagesToNeighbourgs();
         });
@@ -106,20 +110,16 @@ export default class System {
     loadFromGraphML(graphMLObject) {
         if (graphMLObject !== undefined) {
             if (graphMLObject.nodes !== undefined) {
-
                 graphMLObject.nodes.forEach(node => {
-                    let newAgent = this.addAgent();
-                    newAgent.loadFromGraphML(node.id);
+                    this.addAgent(Agent.getAgentFromGraphML(node, this));
                 });
             }
 
             if (graphMLObject.links !== undefined) {
                 graphMLObject.links.forEach(link =>{
-                    let source = this.getAgentById(link.source.id) || new Agent(this);
-                    let target = this.getAgentById(link.target.id) || new Agent(this);
-
+                    let source = this.getAgentById(link.source) || new Agent(this, link.source.id);
+                    let target = this.getAgentById(link.target) || new Agent(this, link.target.id);
                     source.addConnection(target);
-
                 });
             }
         }
@@ -128,7 +128,9 @@ export default class System {
 
     toGraph() {
         let nodes = this.agents.map(agent => { return agent.toGraph() });
+        
         let links = this.getAllConnections().map(connection => {
+            
             return connection.toGraph();
         });
         return { nodes: nodes, links: links };

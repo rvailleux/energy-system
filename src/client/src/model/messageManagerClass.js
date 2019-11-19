@@ -1,4 +1,3 @@
-import Message from './messageClass'
 
 export default class MessageManager{
 
