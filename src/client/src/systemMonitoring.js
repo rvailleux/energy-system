@@ -1,4 +1,5 @@
 import React from 'react';
+import SystemBenchmark from './model/systemBenchmarkClass';
 
 
 export default class SystemMonitoring extends React.Component {
@@ -6,7 +7,18 @@ export default class SystemMonitoring extends React.Component {
         super(props);
 
         this.state = {
-            systemInstance : props.systemInstance,
+            systemBenchmark : new SystemBenchmark({
+                nbAgents: {
+                    min:2,
+                    max: 10
+                },
+                nbConnectionsPerAgent:3,
+                nbMessageSeed: 40, 
+                energyFeedPerTick: 5,
+                messageSize: 1,
+                systemInstance: props.systemInstance
+            }),
+            systemInstance: props.systemInstance
         };
     }
 
@@ -14,7 +26,7 @@ export default class SystemMonitoring extends React.Component {
         return(
             <div>
                 <table>
-                <thead>
+                <thead> 
                     <tr>
                     <td>id</td>
                     <td>Inbox</td>
@@ -37,7 +49,7 @@ export default class SystemMonitoring extends React.Component {
                 )}
                 </tbody>
                 </table>
-                <p>{ JSON.stringify(this.state.systemInstance.toGraph())}</p>
+                <p>{JSON.stringify(this.state.systemBenchmark.getTickReport())}</p>
             </div>
         );
     }

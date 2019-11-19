@@ -2,6 +2,7 @@ import Agent from './agentClass'
 
 export default class System {
     constructor(
+        energyAmountFedPerTick = 1,
         numberOfAgents = 0,
         avgConnectionsPerAgent = 0,
         standardDeviationConnections = 0
@@ -9,6 +10,8 @@ export default class System {
         this.agents = [];
         this.addAgents(numberOfAgents);
         this.distributeConnections(avgConnectionsPerAgent, standardDeviationConnections);
+        this.energyRespawnAmount = energyAmountFedPerTick;
+        this.tickerTracker = 0;
     }
 
     distributeConnections(avgConnectionsPerAgent, standardDeviationConnections) {
@@ -95,6 +98,12 @@ export default class System {
         return agentsArray === undefined ? null : agentsArray[Math.round(Math.random() * (agentsArray.length - 1))]
     }
 
+    tick(){
+        this.tickCirculateMessages();    
+        this.tickEnergize(this.energyRespawnAmount);
+        this.tickerTracker++;
+    }
+
     tickCirculateMessages() {
         this.agents.forEach(agent => {
             agent.diffuseMessagesToNeighbourgs();
@@ -107,24 +116,14 @@ export default class System {
         });
     }
 
-    loadFromGraphML(graphMLObject) {
-        if (graphMLObject !== undefined) {
-            if (graphMLObject.nodes !== undefined) {
-                graphMLObject.nodes.forEach(node => {
-                    this.addAgent(Agent.getAgentFromGraphML(node, this));
-                });
-            }
-
-            if (graphMLObject.links !== undefined) {
-                graphMLObject.links.forEach(link =>{
-                    let source = this.getAgentById(link.source) || new Agent(this, link.source.id);
-                    let target = this.getAgentById(link.target) || new Agent(this, link.target.id);
-                    source.addConnection(target);
-                });
-            }
-        }
+    getCurrentTicker(){
+        return this.tickerTracker;
     }
 
+    isSystemSync(){
+        //TODO
+
+    }
 
     toGraph() {
         let nodes = this.agents.map(agent => { return agent.toGraph() });
@@ -143,6 +142,34 @@ export default class System {
         });
 
         return returnString;
+
+    }
+
+    static getSystemFromGraphML(graphMLObject){
+
+        let newSystem = new System();
+
+        if (graphMLObject !== undefined) {
+            if (graphMLObject.nodes !== undefined) {
+                graphMLObject.nodes.forEach(node => {
+                    newSystem.addAgent(Agent.getAgentFromGraphML(node, newSystem));
+                });
+            }
+
+            if (graphMLObject.links !== undefined) {
+                graphMLObject.links.forEach(link =>{
+                    let source = newSystem.getAgentById(link.source) || new Agent(newSystem, link.source.id);
+                    let target = newSystem.getAgentById(link.target) || new Agent(newSystem, link.target.id);
+                    source.addConnection(target);
+                });
+            }
+
+            if(graphMLObject.energyAmountFedPerTick !== undefined){
+                newSystem.energyAmountFedPerTick = graphMLObject.energyAmountFedPerTick;
+            }
+        }
+
+        return newSystem;
 
     }
 }

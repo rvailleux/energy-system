@@ -30,8 +30,7 @@ export default class SystemPlayer extends React.Component {
       }
 
       tick(){
-        this.state.systemInstance.tickEnergize(1);
-        this.state.systemInstance.tickCirculateMessages();
+        this.state.systemInstance.tick();
         this.setState((state, props) => ({
             ticker: state.ticker+1
           }));
@@ -39,17 +38,18 @@ export default class SystemPlayer extends React.Component {
 
       render(){
           return (
+            <div className="graphContainer">
               <div>
-                <div className="graphContainer">
-                    <Graph
-                    id='graph-id'
-                    data={this.state.systemInstance.toGraph()}
-                    config={this.state.config} />
-                </div>
                 <p>Ticker: {this.state.ticker}</p>
                 <SystemMonitoring
-                systemInstance={this.state.systemInstance}/>          
+                systemInstance= {this.state.systemInstance}/>
               </div>
+              
+              <Graph
+              id='graph-id'
+              data={this.state.systemInstance.toGraph()}
+              config={this.state.config} />
+          </div>
               );
       }
 }
