@@ -1,8 +1,6 @@
 import Connection from './connectionClass'
 import MessageManager from './messageManagerClass';
 
-const MAX_ENERGY_JAUGE = 10;
-
 
 export default class Agent {
     constructor(parentSystem, agentId = null) {
@@ -18,10 +16,6 @@ export default class Agent {
 
         this.messageManager = new MessageManager(this);
         this.energyJauge = 0;
-    }
-
-    inputEnergy(amount) {
-        this.energyJauge = ((this.energyJauge + amount) > MAX_ENERGY_JAUGE ? MAX_ENERGY_JAUGE : this.energyJauge+amount);
     }
 
     addConnection(neighbourgAgent) {
@@ -68,8 +62,8 @@ export default class Agent {
         this.energyJauge = this.messageManager.sendMessages(this.energyJauge);
     }
 
-    feedEnergy(energyAmout){
-        this.energyJauge += energyAmout;
+    feedEnergy(amount){
+        this.energyJauge = ((this.energyJauge + amount) > this.parentSystem.options.maxEnergyHarvestPerAgent ? this.parentSystem.options.maxEnergyHarvestPerAgent : this.energyJauge + amount);
     }
 
     toGraph() {

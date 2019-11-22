@@ -7,24 +7,16 @@ export default class SystemMonitoring extends React.Component {
         super(props);
 
         this.state = {
-            systemBenchmark : new SystemBenchmark({
-                nbAgents: {
-                    min:2,
-                    max: 10
-                },
-                nbConnectionsPerAgent:3,
-                nbMessageSeed: 40, 
-                energyFeedPerTick: 5,
-                messageSize: 1,
-                systemInstance: props.systemInstance
-            }),
-            systemInstance: props.systemInstance
-        };
+            systemBenchmark : props.systemBenchmark
+        };        
+
+        //this.state.systemBenchmark.statusChangedEvent = () => {console.log('tick')};
     }
 
     render(){
         return(
             <div>
+                <h1>{}</h1>
                 <table>
                 <thead> 
                     <tr>
@@ -37,7 +29,7 @@ export default class SystemMonitoring extends React.Component {
                     </tr>   
                 </thead>
                 <tbody>
-                {this.state.systemInstance.agents.map(agent => 
+                {this.state.systemBenchmark.systemInstance.agents.forEach(agent => 
                 <tr>
                     <td>{agent.id}</td>
                     <td>{agent.messageManager.inbox.length}</td>
@@ -49,7 +41,6 @@ export default class SystemMonitoring extends React.Component {
                 )}
                 </tbody>
                 </table>
-                <p>{JSON.stringify(this.state.systemBenchmark.getTickReport())}</p>
             </div>
         );
     }

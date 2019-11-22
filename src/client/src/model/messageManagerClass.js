@@ -13,8 +13,7 @@ export default class MessageManager{
 
         if(!this.inbox.includes(msgObject)){
 
-            console.log("Agent id:" + this.parentAgent.id + " received message id " + msgObject.id+ "inbox size: " + this.inbox.length);
-            console.log({inbox: this.inbox});
+            //console.log("Agent id:" + this.parentAgent.id + " received message id " + msgObject.id+ "inbox size: " + this.inbox.length);
 
             this.inbox.push(msgObject);
             this.queueMessage(msgObject);
@@ -22,7 +21,7 @@ export default class MessageManager{
             return true;
         }        
 
-        console.log('ALREADY RECEIVED!');
+        //console.log('ALREADY RECEIVED!');
 
         return false;
     }
@@ -30,17 +29,17 @@ export default class MessageManager{
     queueMessage(msgObject){
         
         this.parentAgent.connections.forEach(connection => {
-            console.log("Agent id:" + this.parentAgent.id + " queue message id " + msgObject.id + " for connection " + connection.id);
+           //console.log("Agent id:" + this.parentAgent.id + " queue message id " + msgObject.id + " for connection " + connection.id);
             this.sendqueue.push({message:msgObject, connection: connection});
         });
     }
 
     sendMessages(energyAmount){
-        let lastingEnergyAmount = energyAmount;     
+        let lastingEnergyAmount = energyAmount; 
 
         while(lastingEnergyAmount > 0 && this.sendqueue.length > 0 && this.sendqueue.slice(-1)[0].message.size <= lastingEnergyAmount){
             let nextMsg = this.sendqueue.pop();
-            console.log("Agent id:" + this.parentAgent.id + " sending message id " + nextMsg.message.id + " to " + nextMsg.connection.getPairAgent(this.parentAgent).id);
+            //console.log("Agent id:" + this.parentAgent.id + " sending message id " + nextMsg.message.id + " to " + nextMsg.connection.getPairAgent(this.parentAgent).id);
             lastingEnergyAmount -= (this.sendMessage(nextMsg.message, nextMsg.connection) ? nextMsg.message.size : 0);
         }
 
@@ -48,7 +47,7 @@ export default class MessageManager{
     }
 
     sendMessage(msgObject, toConnectionObject){
-        console.log("Agent id:" + this.parentAgent.id + " send message id " + msgObject.id + " to agent id : "+ toConnectionObject.getPairAgent(this.parentAgent).id);
+        //console.log("Agent id:" + this.parentAgent.id + " send message id " + msgObject.id + " to agent id : "+ toConnectionObject.getPairAgent(this.parentAgent).id);
         
         let diffusionDone = toConnectionObject.getPairAgent(this.parentAgent).ackMessage(msgObject)
         if(diffusionDone)

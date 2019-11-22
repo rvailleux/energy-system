@@ -5,51 +5,40 @@ import SystemMonitoring from './systemMonitoring';
 
 
 export default class SystemPlayer extends React.Component {
-    constructor(props){
-        super(props);
+  constructor(props) {
+    super(props);
 
-        this.state = {
-            config: props.config,
-            systemInstance : props.systemInstance,
-            ticker: 0
-        };
-    }
+    this.state = {
+      config: props.config,
+      systemBenchmark: props.systemBenchmark,
+      nbMessagesToSeed: props.messagesToSeed || 1,
+      ticker: 0
+    };
+  }
 
-    componentDidMount() {
-        this.timerID = setInterval(
-          () => this.tick(),
-          1000
-        );
+  componentDidMount() {
+    this.state.systemBenchmark.startTicks();
+    this.state.systemBenchmark.seedMessages();
+  }
 
-        for(let i = 0 ; i< 40; i++)
-            this.state.systemInstance.getRandomAgent().seedMessage(new Message(1));
-      }
+  componentWillUnmount() {
+    this.state.systemBenchmark.stopTicks();
+  }
 
-      componentWillUnmount() {
-        clearInterval(this.timerID);
-      }
+  render() {
+    return (
+      <div className="graphContainer">
+        <div>
+          <p>Ticker: {this.state.systemBenchmark.systemInstance.tickerTracker}</p>
+          <SystemMonitoring
+            systemBenchmark={this.state.systemBenchmark} />
+        </div>
 
-      tick(){
-        this.state.systemInstance.tick();
-        this.setState((state, props) => ({
-            ticker: state.ticker+1
-          }));
-      }
-
-      render(){
-          return (
-            <div className="graphContainer">
-              <div>
-                <p>Ticker: {this.state.ticker}</p>
-                <SystemMonitoring
-                systemInstance= {this.state.systemInstance}/>
-              </div>
-              
-              <Graph
-              id='graph-id'
-              data={this.state.systemInstance.toGraph()}
-              config={this.state.config} />
-          </div>
-              );
-      }
+        <Graph
+          id='graph-id'
+          data={this.state.systemBenchmark.systemInstance.toGraph()}
+          config={this.state.config} />
+      </div>
+    );
+  }
 }

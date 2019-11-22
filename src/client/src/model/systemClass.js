@@ -1,20 +1,21 @@
 import Agent from './agentClass'
+import Message from './messageClass';
 
 export default class System {
-    constructor(
-        energyAmountFedPerTick = 1,
-        numberOfAgents = 0,
-        avgConnectionsPerAgent = 0,
-        standardDeviationConnections = 0
-    ) {
+
+    /**
+     *  
+     * @param {*} options {nbAgents:Int, nbConnectionsPerAgent:Int, nbMessageSeed: Int, energyFeedPerTick: Int, maxEnergyHarvestPerAgent: Int, messageSize: Int, systemInstance?:System, systemDescription:?{nodes:[{id:}], links:[{source:Int, target:Int}]}}
+     */
+    constructor(options = []) {
+        this.options = options;
         this.agents = [];
-        this.addAgents(numberOfAgents);
-        this.distributeConnections(avgConnectionsPerAgent, standardDeviationConnections);
-        this.energyRespawnAmount = energyAmountFedPerTick;
+        this.addAgents(options.nbAgents !== undefined ? options.nbAgents: 0);
+        this.distributeConnections(options.nbConnectionsPerAgent!== undefined ? options.nbConnectionsPerAgent: 0);
         this.tickerTracker = 0;
     }
 
-    distributeConnections(avgConnectionsPerAgent, standardDeviationConnections) {
+    distributeConnections(avgConnectionsPerAgent) {
 
         this.agents.forEach(agent => {
 
@@ -46,7 +47,7 @@ export default class System {
         let map = this.agents.reduce((connectionMap, agent) => {
             let map = connectionMap;
             agent.connections.forEach(connection => {
-                
+
                 connectionMap[connection.id] = connection;
             });
 
@@ -68,7 +69,7 @@ export default class System {
     }
 
     addAgent(agentObject = null) {
-        
+
         let newAgent = agentObject === null ? new Agent(this) : agentObject;
         this.agents.push(newAgent);
 
@@ -83,12 +84,12 @@ export default class System {
     getAgentById(agentId) {
         let result = this.agents.filter(agent => agent.id === agentId);
 
-        if(result.length > 1){
+        if (result.length > 1) {
             throw new Error("Too many agents with the same id " + agentId);
         }
-        else if(result.length <= 0){
+        else if (result.length <= 0) {
             return null;
-        } else if(result.length === 1){
+        } else if (result.length === 1) {
             return result[0];
         }
         return null;
@@ -98,10 +99,31 @@ export default class System {
         return agentsArray === undefined ? null : agentsArray[Math.round(Math.random() * (agentsArray.length - 1))]
     }
 
-    tick(){
-        this.tickCirculateMessages();    
-        this.tickEnergize(this.energyRespawnAmount);
+    setTicker(tickCallback, isSyncCallback){
+        this.tickEvent = tickCallback;
+        this.isSyncEvent = isSyncCallback;
+
+        this.timerID = setInterval(
+            () => this.tick(),
+            1
+          );
+    }
+
+    stopTicker(){
+        clearInterval(this.timerID);
+    }
+
+    tick() {
+        
+        if(this.isSyncComplete()){
+            this.stopTicker();
+            this.isSyncEvent(this);
+            return;
+        }
+        this.tickCirculateMessages();
+        this.tickEnergize(this.options.energyFeedPerTick);
         this.tickerTracker++;
+        this.tickEvent(this);
     }
 
     tickCirculateMessages() {
@@ -110,29 +132,93 @@ export default class System {
         });
     }
 
+    seedMessage(){
+        this.getRandomAgent().seedMessage(new Message(this.options.messageSize!== undefined ? this.options.messageSize : 1));
+    }
+
     tickEnergize(energyPerAgent) {
         this.agents.forEach(agent => {
             agent.feedEnergy(energyPerAgent);
         });
     }
 
-    getCurrentTicker(){
+    getCurrentTicker() {
         return this.tickerTracker;
     }
 
-    isSystemSync(){
-        //TODO
+    isSyncComplete(nbOfMessageToSync) {
+        try {
+            this.agents.forEach(agent => {
+                if (agent.messageManager.inbox.length < this.options.nbMessageSeed) {
+                    throw Error();
+                }
+            });
+        } catch (e) {
+            return false;
+        }
+        return true;
+    }
 
+    getMessagesStatus() {
+        let messagesOverview = [];
+
+
+        this.agents.forEach(agent => {
+
+            agent.messageManager.inbox.forEach(message => {
+
+                if (messagesOverview[message.id] === undefined)
+                    messagesOverview[message.id] = { inbox: [], sendqueue: [] };
+
+                messagesOverview[message.id].inbox.push(agent);
+            });
+
+            agent.messageManager.sendqueue.forEach(messageEntry => {
+
+                if (messagesOverview[messageEntry.message.id] === undefined)
+                    messagesOverview[messageEntry.message.id] = { inbox: [], sendqueue: [] };
+
+                messagesOverview[messageEntry.message.id].sendqueue.push(agent);
+            });
+
+        });
+
+        return messagesOverview;
+    }
+
+    /**
+     * %  = avg nb of agent sync on each message / nb of agents.
+     */
+    getSyncProgress() {
+
+        let messageStatusArray = this.getMessagesStatus();
+
+        return Object.keys(messageStatusArray).reduce((totalMessagesReceived, msgId) => {
+            return totalMessagesReceived + messageStatusArray[msgId].inbox.length;
+        }, 0) / Object.keys(messageStatusArray).length / this.agents.length;
+    }
+
+    // avg nb of agent delivered per tick of diffusion
+    getAvgMessageSpreadSpeed() {
+        return 5;
+    }
+
+    getTickReport() {
+        return {
+            tickerNumber: this.getCurrentTicker(),
+            systemSyncProgress: this.getSyncProgress(),
+            avgMessageSpreadSpeed: this.getAvgMessageSpreadSpeed() // avg nb of agent delivered per tick of diffusion
+        }
     }
 
     toGraph() {
         let nodes = this.agents.map(agent => { return agent.toGraph() });
-        
+
         let links = this.getAllConnections().map(connection => {
-            
+
             return connection.toGraph();
         });
-        return { nodes: nodes, links: links };
+        return {nodes: nodes, links: links, options: this.options};
     }
 
     toString() {
@@ -145,9 +231,9 @@ export default class System {
 
     }
 
-    static getSystemFromGraphML(graphMLObject){
+    static getSystemFromGraphML(graphMLObject, options) {
 
-        let newSystem = new System();
+        let newSystem = new System(options);
 
         if (graphMLObject !== undefined) {
             if (graphMLObject.nodes !== undefined) {
@@ -157,17 +243,16 @@ export default class System {
             }
 
             if (graphMLObject.links !== undefined) {
-                graphMLObject.links.forEach(link =>{
+                graphMLObject.links.forEach(link => {
                     let source = newSystem.getAgentById(link.source) || new Agent(newSystem, link.source.id);
                     let target = newSystem.getAgentById(link.target) || new Agent(newSystem, link.target.id);
                     source.addConnection(target);
                 });
             }
-
-            if(graphMLObject.energyAmountFedPerTick !== undefined){
-                newSystem.energyAmountFedPerTick = graphMLObject.energyAmountFedPerTick;
-            }
         }
+
+        newSystem.options.nbAgents = newSystem.agents.length;
+        newSystem.options.nbConnectionsPerAgent = newSystem.agents.reduce((avg, agent) => {return avg + agent.neighbourgs.length / newSystem.agents.length}, 0);
 
         return newSystem;
 
