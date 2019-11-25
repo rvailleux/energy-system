@@ -5,7 +5,7 @@ export default class System {
 
     /**
      *  
-     * @param {*} options {nbAgents:Int, nbConnectionsPerAgent:Int, nbMessageSeed: Int, energyFeedPerTick: Int, maxEnergyHarvestPerAgent: Int, messageSize: Int, systemInstance?:System, systemDescription:?{nodes:[{id:}], links:[{source:Int, target:Int}]}}
+     * @param {*} options {nbAgents:Int, nbConnectionsPerAgent:Int, nbMessagesSeed: Int, energyFeedPerTick: Int, maxEnergyHarvestPerAgent: Int, messageSize: Int, systemInstance?:System, systemDescription:?{nodes:[{id:}], links:[{source:Int, target:Int}]}}
      */
     constructor(options = []) {
         this.options = options;
@@ -32,8 +32,13 @@ export default class System {
                 } else {
                     let totalRemainerList = this.agents.filter(randomAgent => { return agent.id !== randomAgent.id });
                     if (totalRemainerList.length > 0) {
+                        try{
                         let randomIndex = Math.round(Math.random() * (totalRemainerList.length - 1));
                         agent.addConnection(totalRemainerList[randomIndex]);
+                        } catch(e)
+                        {
+                            console.log("Abort creating new connection between two agents that are already connected.");
+                        }
                     }
 
                     break;
@@ -102,10 +107,10 @@ export default class System {
     setTicker(tickCallback, isSyncCallback){
         this.tickEvent = tickCallback;
         this.isSyncEvent = isSyncCallback;
-
+        
         this.timerID = setInterval(
             () => this.tick(),
-            1
+            10
           );
     }
 
@@ -113,8 +118,7 @@ export default class System {
         clearInterval(this.timerID);
     }
 
-    tick() {
-        
+    tick() {        
         if(this.isSyncComplete()){
             this.stopTicker();
             this.isSyncEvent(this);
@@ -149,13 +153,14 @@ export default class System {
     isSyncComplete(nbOfMessageToSync) {
         try {
             this.agents.forEach(agent => {
-                if (agent.messageManager.inbox.length < this.options.nbMessageSeed) {
+                if (agent.messageManager.inbox.length < this.options.nbMessagesSeed) {
                     throw Error();
                 }
             });
         } catch (e) {
             return false;
         }
+
         return true;
     }
 

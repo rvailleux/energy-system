@@ -19,6 +19,10 @@ export default class Agent {
     }
 
     addConnection(neighbourgAgent) {
+
+        if(this.neighbourgs.includes(neighbourgAgent))
+            throw new Error("Connection from " + this.id+" to "+ neighbourgAgent.id + " already exists.");
+
         let newConnection = new Connection(this, neighbourgAgent);
         this.connections.push(newConnection);
         neighbourgAgent.ackConnection(newConnection);

@@ -4,18 +4,20 @@ export default class SystemBenchmark {
 
     /**
      * 
-     * @param {Object} options {nbAgents:{min:Int, max:Int}, nbConnectionsPerAgent:Int, nbMessageSeed: Int, energyFeedPerTick: Int, maxEnergyHarvestPerAgent: Int, messageSize: Int, systemInstance?:System, systemDescription?:{nodes[{id:Int}], links:[{source:Int, target:Int}]}}
+     * @param {Object} options {nbAgents:{min:Int, max:Int}, nbConnectionsPerAgent:Int, nbMessagesSeed: Int, energyFeedPerTick: Int, maxEnergyHarvestPerAgent: Int, messageSize: Int, systemInstance?:System, systemDescription?:{nodes[{id:Int}], links:[{source:Int, target:Int}]}}
      */
     constructor(options = []) {
         this.options = options;
         this.systemInstances = [];
-
+        this.tickEvent = options.tickEventHandler !== undefined ? options.tickEventHandler : (systemObject) => {};
+        this.isSyncEvent = options.isSyncEventHandler !== undefined ? options.isSyncEventHandler : (systemObject) => {};
+ 
         if (options.systemInstance !== undefined) {
             this.systemInstances.push(options.systemInstance);
         }
         if (options.systemDescription !== undefined) {
             this.systemInstances.push(System.getSystemFromGraphML(options.systemDescription, options));
-        }
+        }        
 
         if (options.nbAgents !== undefined
             && options.nbConnectionsPerAgent !== undefined
@@ -26,7 +28,7 @@ export default class SystemBenchmark {
             let minNbAgent = options.nbAgents.min !== undefined && options.nbAgents.min > 0 ? options.nbAgents.min : 1;
             let maxNbAgent = options.nbAgents.max !== undefined ? options.nbAgents.max : 2;
 
-            for (let i = minNbAgent; i <= maxNbAgent; i++) {
+            for (let i = Math.max(2,minNbAgent); i <= maxNbAgent; i++) {
                 let specificOptions = options;
                 specificOptions.nbAgents = i;
                 this.systemInstances.push(new System(specificOptions));
@@ -36,18 +38,19 @@ export default class SystemBenchmark {
 
     seedMessages(){
         this.systemInstances.forEach(systemInstance =>{
-            for (let i = 0; i < (this.options.nbMessageSeed !== undefined ? this.options.nbMessageSeed : 1) ; i++)
+            for (let i = 0; i < (this.options.nbMessagesSeed !== undefined ? this.options.nbMessagesSeed : 1) ; i++)
                 systemInstance.seedMessage();
         });
     }
 
     tickEventHandler(systemObject){
-        console.log("System tick");
-        console.log({systemLog: systemObject.getTickReport()});
+        //console.log("System tick");
+        //console.log({systemLog: systemObject.getTickReport()});
+        this.tickEvent(systemObject);
     }
 
     isSyncEventHandler(systemObject){
-        console.log("System sync");
+        this.syncEvent(systemObject);
     }
 
     startTicks(){
@@ -56,7 +59,6 @@ export default class SystemBenchmark {
         });
     }
     stopTicks(){
-
         this.systemInstances.forEach(systemInstance =>{
             systemInstance.stopTicker();
         });
