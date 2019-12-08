@@ -1,5 +1,5 @@
 import React from 'react';
-import SystemBenchmark from './model/systemBenchmarkClass';
+import SystemBenchmark from '../../model/systemBenchmarkClass';
 import { throws } from 'assert';
 
 

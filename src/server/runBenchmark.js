@@ -1,6 +1,9 @@
-const SystemBenchmark = require ('../../dist/client/src/model/systemBenchmarkClass');
-
+import SystemBenchmark from '../model/systemBenchmarkClass'
+import fs from 'fs'
+ 
 function main(){
+    
+    let fileName = "./results/result-"+Date.now()+".txt";
 
     const systemBenchmark = new SystemBenchmark({
         nbAgents:{min:5, max:10},
@@ -11,15 +14,11 @@ function main(){
         messageSize: 1,
         systemInstance: undefined,//systemObject
         systemDescription: undefined,// graphML
-        tickEvent: tickEventHandler,
-        isSyncEvent: isSyncEventHandler,
+        fileName: fileName
     });
 
-    systemBenchmark.
-
-    systemBenchmark.seedMessages();
-    systemBenchmark.startTicks();
-
+    systemBenchmark.seedMessages()
+    systemBenchmark.startTicks();     
 }
 
 function tickEventHandler(systemObject){
@@ -29,3 +28,5 @@ function tickEventHandler(systemObject){
 function isSyncEventHandler(systemObject){
     console.log("Finished");
 }
+
+main();
