@@ -7,7 +7,7 @@ function main(){
 
     const systemBenchmark = new SystemBenchmark({
         nbAgents:{min:5, max:10},
-        nbConnectionsPerAgent:3,
+        nbConnectionsPerAgent:{min:3, max:10},
         nbMessagesSeed:40,
         energyFeedPerTick: 5,
         maxEnergyHarvestPerAgent: 10,

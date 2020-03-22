@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "babel src --out-dir dist --ignore '**/node_modules/**/*.js'",
+    "build": "babel src/model/ --out-dir dist/model && babel src/server -d dist/server",
     "start": "npm run build && node dist/server/runBenchmark.js"
   },
   "repository": {
@@ -24,8 +24,7 @@
     "@babel/node": "^7.7.4",
     "@babel/preset-env": "^7.7.1",
     "@babel/preset-flow": "^7.7.4",
-    "babel-watch": "^7.0.0",
-    "nodemon": "^2.0.1"
+    "babel-watch": "^7.0.0"
   },
   "dependencies": {
     "express": "^4.17.1"
